@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# make-table-template.py
+# tbl-template.py
 #
 # PURPOSE
 #	Create an ODS file containing column names matching an input 
