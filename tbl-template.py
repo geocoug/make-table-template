@@ -21,6 +21,7 @@ HISTORY
     ----------	--------------------------------------------------
     2022-02-17    Created.  CG.
     2022-02-18    Add table pattern matching. CG.
+                  Strip spaces from input argument lists. CG.
 =================================================================="""
 
 import psycopg2
