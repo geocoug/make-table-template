@@ -10,6 +10,8 @@ PURPOSE
 TODO
     1) Create file subdirectories as needed to write to ODS.
     2) Allow output in XLSX format.
+    3) Automatically exclude all SERIAL and BIGSERIAL columns
+    4) Allow optional reading from a configuration file.
 
 AUTHOR
     Caleb Grant (CG)
