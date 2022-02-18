@@ -80,9 +80,7 @@ class Database():
         return cur
 
     def __repr__(self):
-        return u"""Database(host=%r,
-                database=%r,
-                user=%r)""" % (self.host, self.db, self.user)
+        return u"""Database(host=%s, database=%s, user=%s)""" % (self.host, self.db, self.user)
 
 
 class DatabaseQuery(Database):
@@ -91,7 +89,10 @@ class DatabaseQuery(Database):
         super().__init__(host, db, user)
         self.schema = schema
         self.tbls = tbls
-        self.xcols = xcols
+        if xcols is None:
+            self.xcols = xcols
+        else:
+            self.xcols = xcols.strip()
         self.tbl_list = self.table_list()
 
     def table_list(self):
@@ -106,6 +107,7 @@ class DatabaseQuery(Database):
                                   ORDER BY table_name;""")
             tbl_list = [table[0] for table in tables]
         else:
+            self.tbls = self.tbls.strip()
             try:
                 tables = [t for t in self.tbls.split(',')]
                 for tbl in tables:
