@@ -38,6 +38,7 @@ __vdate = "2022-02-18"
 
 class Database():
     '''Base class to connect to a database and execute procedures.'''
+
     def __init__(self, host, db, user, password=None):
         self.host = host
         self.db = db
@@ -86,6 +87,7 @@ class Database():
 
 class DatabaseQuery(Database):
     '''Database subclass used to perform customized methods.'''
+
     def __init__(self, host, db, user, schema, tbls, xcols=None):
         super().__init__(host, db, user)
         self.schema = schema
@@ -155,6 +157,7 @@ class DatabaseQuery(Database):
 
 class OdsFile():
     '''Create, write, and save to an OpenDatasheet file.'''
+
     def __init__(self):
         self.filename = None
         self.wkbook = None
