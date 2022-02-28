@@ -37,8 +37,8 @@ __version__ = "0.1.1"
 __vdate = "2022-02-18"
 
 
-class Database():
-    '''Base class to connect to a database and execute procedures.'''
+class Database:
+    """Base class to connect to a database and execute procedures."""
 
     def __init__(self, host, db, user, password=None):
         self.host = host
@@ -56,12 +56,14 @@ class Database():
             self.conn.close()
         if self.password is not None:
             try:
-                self.conn = psycopg2.connect(f"""
+                self.conn = psycopg2.connect(
+                    f"""
                     host='{self.host}'
                     dbname='{self.db}'
                     user='{self.user}'
                     password='{self.password}'
-                    """)
+                    """
+                )
             except psycopg2.OperationalError as err:
                 raise err
 
@@ -84,11 +86,15 @@ class Database():
         return cur
 
     def __repr__(self):
-        return u"""Database(host=%s, database=%s, user=%s)""" % (self.host, self.db, self.user)
+        return """Database(host=%s, database=%s, user=%s)""" % (
+            self.host,
+            self.db,
+            self.user,
+        )
 
 
 class DatabaseQuery(Database):
-    '''Database subclass used to perform customized methods.'''
+    """Database subclass used to perform customized methods."""
 
     def __init__(self, host, db, user, schema, tbls, xcols=None):
         super().__init__(host, db, user)
@@ -101,28 +107,30 @@ class DatabaseQuery(Database):
         self.tbl_list = self.table_list()
 
     def table_list(self):
-        '''Return list of schema tables.\n
+        """Return list of schema tables.\n
         TODO - Add pattern matching (ie. e_*,x_* )
-        '''
+        """
         tbl_list = []
         if self.tbls is None:
-            tables = self.execute(f"""SELECT table_name
+            tables = self.execute(
+                f"""SELECT table_name
                                   FROM information_schema.tables
                                   WHERE table_schema = '{self.schema}'
-                                  ORDER BY table_name;""")
+                                  ORDER BY table_name;"""
+            )
             tbl_list = [table[0] for table in tables]
         else:
             self.tbls = self.tbls.strip()
             try:
-                tables = [t for t in self.tbls.split(',')]
+                tables = [t for t in self.tbls.split(",")]
             except Exception as err:
                 raise err
             try:
                 for tbl in tables:
                     t = tbl.strip()
-                    if re.search('\*', t):
-                        match_str = t.split('*')
-                        match_str = '%'.join(match_str)
+                    if re.search("\*", t):
+                        match_str = t.split("*")
+                        match_str = "%".join(match_str)
                         tbl_list.extend(self.match_tbl(match_str))
                     if self.verify_tbl(t):
                         tbl_list.append(t)
@@ -134,36 +142,41 @@ class DatabaseQuery(Database):
         return sorted(list(set(tbl_list)))
 
     def match_tbl(self, tbl):
-        cur = self.execute(f"""SELECT table_name
+        cur = self.execute(
+            f"""SELECT table_name
                             FROM information_schema.tables
                             WHERE table_schema = '{self.schema}'
-                            AND table_name ilike '{tbl}';""")
+                            AND table_name ilike '{tbl}';"""
+        )
         return [t[0] for t in cur]
 
     def verify_tbl(self, tbl):
-        c = self.execute(f"""SELECT *
+        c = self.execute(
+            f"""SELECT *
                         FROM information_schema.tables
                         WHERE table_schema = '{self.schema}'
-                        AND table_name = '{tbl}';""")
+                        AND table_name = '{tbl}';"""
+        )
         if c.fetchone() is None:
             return False
         else:
             return True
 
     def column_list(self, tbl):
-        cols = self.execute(f"""SELECT column_name
+        cols = self.execute(
+            f"""SELECT column_name
                             FROM information_schema.columns
                             WHERE table_schema = '{self.schema}'
-                            AND table_name = '{tbl}';""")
+                            AND table_name = '{tbl}';"""
+        )
         if self.xcols is None:
             return [col[0] for col in cols]
         else:
-            return [col[0] for col in cols
-                    if col[0] not in self.xcols.split(',')]
+            return [col[0] for col in cols if col[0] not in self.xcols.split(",")]
 
 
-class OdsFile():
-    '''Create, write, and save to an OpenDatasheet file.'''
+class OdsFile:
+    """Create, write, and save to an OpenDatasheet file."""
 
     def __init__(self):
         self.filename = None
@@ -180,8 +193,7 @@ class OdsFile():
         tr = odf.table.TableRow()
         odf_table.addElement(tr)
         for item in datarow:
-            tr.addElement(odf.table.TableCell(valuetype="string",
-                                              stringvalue=item))
+            tr.addElement(odf.table.TableCell(valuetype="string", stringvalue=item))
 
     def add_sheet(self, odf_table):
         self.wkbook.spreadsheet.addElement(odf_table)
@@ -193,31 +205,50 @@ class OdsFile():
 
 
 def clparser():
-    '''Create a parser to handle input arguments and displaying
-    a script specific help message.'''
+    """Create a parser to handle input arguments and displaying
+    a script specific help message."""
     desc_msg = """Create an ODF file of empty data tables with
         matching columns to the specified database tables.
-        Version %s, %s""" % (__version__, __vdate)
+        Version %s, %s""" % (
+        __version__,
+        __vdate,
+    )
     parser = argparse.ArgumentParser(description=desc_msg)
-    parser.add_argument('output_file',
-                        help="""Name of the ODS output file containing
-                        data table templates.""")
-    parser.add_argument('-v', '--host', type=str, default='env3', dest='host',
-                        help="Server hostname.")
-    parser.add_argument('-d', '--database', type=str, dest='database',
-                        help="Database name.")
-    parser.add_argument('-s', '--schema', type=str, dest='schema',
-                        help='Database schema.')
-    parser.add_argument('-u', '--username', type=str, dest='username',
-                        help="Database username.")
-    parser.add_argument('-t', '--tables', type=str, dest='table_list',
-                        help="""Comma seperated list of tables for template
+    parser.add_argument(
+        "output_file",
+        help="""Name of the ODS output file containing
+                        data table templates.""",
+    )
+    parser.add_argument(
+        "-v", "--host", type=str, default="env3", dest="host", help="Server hostname."
+    )
+    parser.add_argument(
+        "-d", "--database", type=str, dest="database", help="Database name."
+    )
+    parser.add_argument(
+        "-s", "--schema", type=str, dest="schema", help="Database schema."
+    )
+    parser.add_argument(
+        "-u", "--username", type=str, dest="username", help="Database username."
+    )
+    parser.add_argument(
+        "-t",
+        "--tables",
+        type=str,
+        dest="table_list",
+        help="""Comma seperated list of tables for template
                         creation. If no tables are specified, all schema tables
                         will be used. Pattern matching may be used to find
-                        table similarities (ie. x_* or *lab*).""")
-    parser.add_argument('-x', '--columns', type=str, dest='x_columns',
-                        help="""Comma seperated list of columns that should not be
-                        included in the output table templates.""")
+                        table similarities (ie. x_* or *lab*).""",
+    )
+    parser.add_argument(
+        "-x",
+        "--columns",
+        type=str,
+        dest="x_columns",
+        help="""Comma seperated list of columns that should not be
+                        included in the output table templates.""",
+    )
     return parser
 
 
@@ -231,7 +262,7 @@ if __name__ == "__main__":
         args.username,
         args.schema,
         args.table_list,
-        args.x_columns
+        args.x_columns,
     )
 
     wkbook = OdsFile()
