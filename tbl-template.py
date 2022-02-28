@@ -22,6 +22,7 @@ HISTORY
     2022-02-17    Created.  CG.
     2022-02-18    Add table pattern matching. CG.
                   Strip spaces from input argument lists. CG.
+    2022-02-28    Fix pattern matching func. CG.
 =================================================================="""
 
 import psycopg2
@@ -59,7 +60,8 @@ class Database():
                     host='{self.host}'
                     dbname='{self.db}'
                     user='{self.user}'
-                    password='{self.password}'""")
+                    password='{self.password}'
+                    """)
             except psycopg2.OperationalError as err:
                 raise err
 
@@ -113,17 +115,22 @@ class DatabaseQuery(Database):
             self.tbls = self.tbls.strip()
             try:
                 tables = [t for t in self.tbls.split(',')]
+            except Exception as err:
+                raise err
+            try:
                 for tbl in tables:
-                    if re.search('\\*', tbl):
-                        match_str = tbl.split('*')
+                    t = tbl.strip()
+                    if re.search('\*', t):
+                        match_str = t.split('*')
                         match_str = '%'.join(match_str)
                         tbl_list.extend(self.match_tbl(match_str))
-                    if self.verify_tbl(tbl):
-                        tbl_list.append(tbl)
+                    if self.verify_tbl(t):
+                        tbl_list.append(t)
                     else:
                         pass
             except Exception as err:
                 raise err
+
         return sorted(list(set(tbl_list)))
 
     def match_tbl(self, tbl):
